@@ -34,7 +34,8 @@ jobs:
         env:
           SOURCE_COMMIT: ${{ github.sha }}
         run: ./scripts/build.ps1
-      -       - name: Build and smoke test unprivileged container
+      - name: Build and smoke test unprivileged container
+        shell: bash
         run: |
           docker build --pull --tag portfolio:ci .
           docker run --detach --name portfolio-ci --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges:true --publish 127.0.0.1:8080:8080 portfolio:ci
