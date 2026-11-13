@@ -10,7 +10,7 @@ function Assert-Check {
     if (-not $Condition) { $failures.Add($Message) }
 }
 
-$requiredFiles = @('index.html', 'styles.css', 'script.js', 'assets/resume.pdf', 'assets/favicon.svg')
+$requiredFiles = @('index.html', 'styles.css', 'script.js', 'assets/resume.pdf', 'assets/favicon.svg', 'assets/social-card.png')
 foreach ($relative in $requiredFiles) {
     $target = Join-Path $projectRoot $relative
     Assert-Check (Test-Path -LiteralPath $target -PathType Leaf) "Missing required file: $relative"
@@ -24,6 +24,32 @@ Assert-Check ($html -match '(?is)<title>\s*[^<\s].*?</title>') 'Set a descriptiv
 Assert-Check ($html -match '(?i)<meta\b[^>]*name=["'']viewport["'']') 'Set the responsive viewport metadata.'
 Assert-Check ($html -match '(?i)<meta\b[^>]*name=["'']description["'']') 'Set the search description metadata.'
 Assert-Check ([regex]::Matches($html, '(?i)<h1(?:\s|>)').Count -eq 1) 'Use exactly one primary heading.'
+
+# Social crawlers read the initial HTML without running the site's JavaScript.
+$openGraph = @{}
+foreach ($match in [regex]::Matches($html, '(?is)<meta\b[^>]*>')) {
+    $property = [regex]::Match($match.Value, '(?i)\bproperty\s*=\s*["'']([^"'']+)["'']')
+    $content = [regex]::Match($match.Value, '(?i)\bcontent\s*=\s*["'']([^"'']*)["'']')
+    if ($property.Success -and $content.Success) { $openGraph[$property.Groups[1].Value] = $content.Groups[1].Value }
+}
+foreach ($property in @('og:title', 'og:description', 'og:url', 'og:image')) {
+    Assert-Check (-not [string]::IsNullOrWhiteSpace($openGraph[$property])) "Missing social preview metadata: $property"
+}
+$imageUri = $null
+$hasImageUri = [Uri]::TryCreate($openGraph['og:image'], [UriKind]::Absolute, [ref]$imageUri)
+Assert-Check ($hasImageUri -and $imageUri.Scheme -eq 'https') 'Social preview image must use an absolute HTTPS URL.'
+
+$preview = [IO.File]::ReadAllBytes((Join-Path $projectRoot 'assets/social-card.png'))
+$isPng = $preview.Length -ge 24 -and [BitConverter]::ToString($preview, 0, 8) -eq '89-50-4E-47-0D-0A-1A-0A'
+Assert-Check $isPng 'Social preview must be a real PNG.'
+Assert-Check ($preview.Length -lt 5MB) 'Social preview image must stay below 5 MB.'
+if ($isPng) {
+    # IHDR stores dimensions as unsigned big-endian integers; no imaging library is needed in CI.
+    $width = [uint64]$preview[16] * 16777216 + [uint64]$preview[17] * 65536 + [uint64]$preview[18] * 256 + $preview[19]
+    $height = [uint64]$preview[20] * 16777216 + [uint64]$preview[21] * 65536 + [uint64]$preview[22] * 256 + $preview[23]
+    Assert-Check ($width -ge 1200 -and $height -ge 627) 'Social preview needs at least 1200 x 627 pixels.'
+    Assert-Check ($openGraph['og:image:width'] -eq [string]$width -and $openGraph['og:image:height'] -eq [string]$height) 'Social preview metadata must match the PNG dimensions.'
+}
 
 $ids = @{}
 foreach ($match in [regex]::Matches($html, '\bid\s*=\s*["'']([^"'']+)["'']')) {
@@ -77,4 +103,4 @@ if ($failures.Count -gt 0) {
     foreach ($failure in $failures) { Write-Host "FAIL: $failure" -ForegroundColor Red }
     throw "Portfolio validation failed ($($failures.Count) checks)."
 }
-Write-Host "PASS: page metadata, headings, unique IDs, local links, resume, assets, and accessibility basics." -ForegroundColor Green
+Write-Host "PASS: page metadata, social preview image, headings, unique IDs, local links, resume, assets, and accessibility basics." -ForegroundColor Green
