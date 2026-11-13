@@ -1,4 +1,4 @@
-FROM nginx/nginx-unprivileged:1.30.6-alpine
+FROM nginx/nginx-unprivileged:1.31.7-alpine
 
 LABEL org.opencontainers.image.title="Prakhar Shukla portfolio" \
       org.opencontainers.image.description="Static DevOps portfolio served by unprivileged NGINX"
