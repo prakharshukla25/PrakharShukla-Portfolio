@@ -55,21 +55,23 @@ const projects = {
   verikyb: {
     category: "BUSINESS VERIFICATION / PROFESSIONAL PROJECT",
     title: "VeriKYB",
-    summary: "Delivery engineering for a Know Your Business verification platform. My work connected repository governance, automated validation, and deployment workflows across Dev, UAT, and Production.",
+    summary: "DevOps delivery for a Know Your Business verification platform. I managed repositories, validation, and release workflows that connected developer changes with Dev, UAT, and Production deployments.",
     sections: [
-      { title: "The engineering focus", text: "Create a consistent route from a developer’s change to a release, with branch protection and automated checks built into the process." },
-      { title: "My contribution", items: ["Managed GitHub repositories and branching strategies, with CI/CD pipelines built using Azure DevOps, Git, and YAML.", "Automated build validation and release workflows across Dev, UAT, and Production environments.", "Implemented Git branch protection, pull request validation, and automated quality checks.", "Worked with Azure infrastructure, Linux administration, and PowerShell automation, with attention to security and cost optimization."] },
-      { title: "Why it matters", text: "Consistent validation and environment workflows support code quality, deployment reliability, and team collaboration. These are the outcomes behind my delivery decisions." }
+      { title: "Delivery context", text: "The work covered both source control and application delivery. A change needed a clear review path in GitHub, automated build validation, and environment-specific release workflows in Azure DevOps. My responsibility was to maintain those connections so developers and QA could work through a consistent delivery process." },
+      { title: "What I did", items: ["Managed GitHub repositories and branching strategies, including branch protection and pull request validation to apply checks before changes were merged.", "Built and maintained CI/CD workflows using Azure DevOps, Git, and YAML, covering build validation and release automation across Dev, UAT, and Production.", "Implemented automated quality checks alongside repository controls, making validation part of the team's normal change process.", "Worked on Azure infrastructure and Linux administration, using PowerShell automation for environment and delivery work with attention to security and cost optimization."] },
+      { title: "How the pieces worked together", text: "Repository controls governed how changes entered the codebase; pipeline validation checked those changes; release workflows handled delivery into the intended environment. Keeping these responsibilities connected supported collaboration between development and QA and made deployment troubleshooting part of the release process." },
+      { title: "Value delivered", text: "The practical value was a shared route from change to release: protected branches, visible validation results, and repeatable environment workflows. These controls supported code quality and deployment reliability without relying on a different set of manual steps for each release." }
     ]
   },
   finance: {
     category: "FINANCIAL SERVICES / PROFESSIONAL PROJECT",
     title: "Financial Account Opening",
-    summary: "CI/CD and cloud delivery for a financial account opening application, covering automated builds, testing, deployments, and downstream system integration.",
+    summary: "DevOps delivery for a financial account opening application. I worked on Azure DevOps pipelines, release automation, and deployment troubleshooting across Dev, UAT, and Production, including downstream system integration.",
     sections: [
-      { title: "The engineering focus", text: "Support reliable application delivery across environments, while keeping release automation and deployment troubleshooting part of the same workflow." },
-      { title: "My contribution", items: ["Designed and maintained CI/CD pipelines with Azure DevOps, Git, and YAML.", "Automated application builds, testing, and deployments across Dev, UAT, and Production.", "Managed release automation and investigated deployment issues using Docker, Kubernetes on Azure AKS, and Terraform.", "Supported application delivery and seamless integration with downstream systems."] },
-      { title: "The approach", text: "Combine infrastructure automation, container orchestration, and repeatable release workflows so that delivery is a process teams can understand and maintain." }
+      { title: "Delivery context", text: "Application delivery involved builds, tests, environment configuration, and integration with downstream systems. My work covered the route from a Git change through pipeline execution to deployment, with development and QA involved when a release or environment needed investigation." },
+      { title: "What I did", items: ["Designed and maintained CI/CD pipelines using Azure DevOps, Git, and YAML to automate application builds, testing, and deployments.", "Supported delivery across Dev, UAT, and Production, connecting release automation with the configuration required by each environment.", "Managed release automation and investigated deployment issues using Docker, Kubernetes on Azure AKS, and Terraform.", "Worked with development and QA on delivery troubleshooting and supported the application's integration with downstream systems."] },
+      { title: "How the tools contributed", text: "Azure DevOps and YAML defined the build, test, and deployment workflow. Docker provided the application container context; AKS provided the Azure Kubernetes environment; Terraform supported infrastructure automation. My release and troubleshooting work crossed these layers, so pipeline execution and the target environment had to be considered together." },
+      { title: "Value delivered", text: "Automated build, test, and deployment steps gave the team a repeatable release process across environments. Combining that automation with deployment troubleshooting and downstream integration support helped the team work through delivery issues, connecting pipeline execution with the application's target environment and dependent systems." }
     ]
   }
 };
@@ -105,12 +107,21 @@ document.querySelectorAll("[data-project]").forEach((button) => {
     document.getElementById("close-project").focus();
   });
 });
-document.getElementById("close-project").addEventListener("click", () => projectDialog.close());
+function restoreProjectFocus() {
+  if (projectDialog.open) return;
+  document.body.classList.remove("dialog-open");
+  if (projectTrigger) projectTrigger.focus();
+}
+function closeProject() {
+  projectDialog.close();
+  restoreProjectFocus();
+}
+document.getElementById("close-project").addEventListener("click", closeProject);
 projectDialog.addEventListener("click", (event) => {
   const rect = projectDialog.getBoundingClientRect();
-  if (event.target === projectDialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) projectDialog.close();
+  if (event.target === projectDialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) closeProject();
 });
-projectDialog.addEventListener("close", () => { document.body.classList.remove("dialog-open"); if (projectTrigger) projectTrigger.focus(); });
+projectDialog.addEventListener("close", restoreProjectFocus);
 
 const copyButton = document.getElementById("copy-email");
 const copyStatus = document.getElementById("copy-status");
@@ -135,15 +146,28 @@ copyButton.addEventListener("click", async () => {
   copyTimer = window.setTimeout(() => { copyStatus.textContent = ""; }, 5000);
 });
 
-if ("IntersectionObserver" in window) {
-  const navigation = [...document.querySelectorAll(".desktop-nav a")];
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      const link = navigation.find((item) => item.getAttribute("href") === `#${entry.target.id}`);
-      if (!link) return;
-      if (entry.isIntersecting) { navigation.forEach((item) => item.removeAttribute("aria-current")); link.setAttribute("aria-current", "location"); }
-      else if (link.hasAttribute("aria-current")) link.removeAttribute("aria-current");
-    });
-  }, { rootMargin: "-15% 0px -35% 0px", threshold: 0 });
-  ["work", "experience", "stack", "blog"].forEach((id) => observer.observe(document.getElementById(id)));
+const navigation = [...document.querySelectorAll(".desktop-nav a")];
+const navigationSections = navigation.map((link) => document.querySelector(link.getAttribute("href")));
+navigation.forEach((link) => link.addEventListener("click", () => {
+  navigation.forEach((item) => item.removeAttribute("aria-current"));
+  link.setAttribute("aria-current", "location");
+}));
+let navigationFrame;
+function updateNavigation() {
+  navigationFrame = null;
+  const marker = window.innerHeight * 0.25;
+  const activeSection = navigationSections.find((section) => {
+    const bounds = section.getBoundingClientRect();
+    return bounds.top <= marker && bounds.bottom > marker;
+  });
+  navigation.forEach((link, index) => {
+    if (activeSection && navigationSections[index] === activeSection) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
 }
+function scheduleNavigationUpdate() {
+  if (!navigationFrame) navigationFrame = window.requestAnimationFrame(updateNavigation);
+}
+window.addEventListener("scroll", scheduleNavigationUpdate, { passive: true });
+window.addEventListener("resize", scheduleNavigationUpdate);
+updateNavigation();

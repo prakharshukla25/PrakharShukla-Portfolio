@@ -1,0 +1,97 @@
+/* Contribution-led content and the portfolio's inspectable engineering story. */
+.content-kicker{display:block;font-family:var(--mono);font-size:10px;font-weight:500;line-height:1.6;letter-spacing:1.1px;color:var(--warm)}
+.hero-role{margin-top:18px;color:var(--muted);font-size:13px;line-height:1.8}
+.hero-role>span{display:block;margin-bottom:3px;color:var(--warm);font-family:var(--mono);font-size:9px;letter-spacing:1px}
+.hero-quicklink{display:inline-flex;align-items:center;gap:14px;max-width:430px;margin-top:20px;color:var(--accent);font-size:12px;line-height:1.8}
+.hero-quicklink>span{flex-shrink:0;font-size:20px}
+.hero-quicklink:hover{text-decoration:underline;text-underline-offset:4px}
+.hero-proof{margin-top:32px}
+.achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-bottom:40px}
+.achievement-card{display:flex;flex-direction:column;padding:27px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(135deg,#f0b58b08,var(--surface));transition:border-color .2s,transform .2s}
+.achievement-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.achievement-card h3{margin-top:15px;font-size:24px;line-height:1.25;letter-spacing:-.6px}
+.achievement-card>p{margin-top:15px;color:var(--muted);font-size:14px;line-height:1.85}
+.achievement-link{display:flex;justify-content:space-between;gap:12px;margin-top:22px;padding-top:15px;border-top:1px solid var(--line);color:var(--accent);font-size:12px}
+.achievement-link>span{font-size:19px;line-height:1}
+.project-group-label{margin-bottom:20px}
+.project{display:flex;flex-direction:column}
+.project-content{display:flex;flex-direction:column;flex:1}
+.project-content>.project-role{margin-top:12px;max-width:none;color:var(--accent);font-size:12px;line-height:1.8}
+.project-context{margin-top:25px}
+.project-context>p,.project-impact>p{margin-top:9px;color:var(--muted);font-size:14px;line-height:1.85}
+.project-highlights{margin-top:18px}
+.project-highlights>li,.role-points>li{position:relative;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.85}
+.project-highlights>li+li,.role-points>li+li{margin-top:11px}
+.project-highlights>li::before,.role-points>li::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.project-impact{margin-top:22px;padding:16px 17px;border-left:2px solid var(--warm);border-radius:0 5px 5px 0;background:#f0b58b08}
+.project .tags{margin-top:21px;margin-bottom:23px}
+.project .project-open{margin-top:auto}
+.experience-intro{align-self:start}
+.experience-focus{margin-top:28px;padding:22px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.experience-focus p{margin-top:15px;font-size:13px;line-height:1.85;color:var(--muted)}
+.experience-focus strong{color:var(--ink);font-weight:500}
+.timeline-item>p.role-context{margin-top:16px;color:var(--ink);font-size:14px;line-height:1.85}
+.role-points{margin-top:18px}
+.timeline-item>p.role-contribution{margin-top:22px;padding:15px 16px;border-left:2px solid var(--warm);border-radius:0 5px 5px 0;background:#f0b58b08;color:var(--muted);font-size:13px;line-height:1.85}
+.role-contribution>strong{display:block;color:var(--warm);font-weight:500;margin-bottom:4px}
+.timeline-item .timeline-tags{font-size:9px;line-height:1.9}
+.engineering-section{display:block;padding-top:96px;padding-bottom:96px}
+.engineering-section h2{font-size:clamp(38px,4.2vw,58px);letter-spacing:-2px}
+.engineering-heading{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;margin-bottom:38px}
+.engineering-intro{padding-top:37px}
+.engineering-intro>p{font-size:15px;line-height:1.85;color:var(--muted)}
+.engineering-intro>.button{margin-top:22px}
+.engineering-overview{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+.engineering-story{padding:29px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.engineering-story h3{margin-top:14px;font-size:27px;line-height:1.25;letter-spacing:-.7px}
+.engineering-story>p{margin-top:18px;font-size:14px;line-height:1.9;color:var(--muted)}
+.engineering-story>.content-kicker:not(:first-child){margin-top:26px}
+.engineering-story>p.engineering-scope{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);color:var(--warm);font-size:13px}
+.engineering-flow{overflow:hidden;border:1px solid var(--line);border-radius:9px;background:var(--surface-2)}
+.engineering-flow-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:18px 21px;border-bottom:1px solid var(--line)}
+.engineering-flow-title .mono{font-size:10px;color:var(--warm);letter-spacing:.7px}
+.engineering-flow-title>a{font-size:11px;color:var(--accent)}
+.shipping-stages{padding:0 22px}
+.shipping-stages>li{display:flex;align-items:flex-start;gap:18px;padding:23px 0}
+.shipping-stages>li+li{border-top:1px solid var(--line)}
+.shipping-stages>li>span{flex:0 0 26px;padding-top:3px;color:var(--warm);font-family:var(--mono);font-size:12px}
+.shipping-stages strong{font-size:16px;font-weight:500;line-height:1.4}
+.shipping-stages p{margin-top:7px;color:var(--muted);font-size:13px;line-height:1.85}
+.engineering-section code{font-family:var(--mono);font-size:.88em;padding:1px 4px;border-radius:3px;background:#69d4e210;color:var(--ink)}
+.engineering-feed-note{padding:19px 22px;border-top:1px solid var(--line);font-size:13px;line-height:1.85;color:var(--muted)}
+.engineering-feed-note>strong{display:block;margin-bottom:5px;color:var(--ink);font-weight:500}
+.engineering-tools{margin-top:42px}
+.engineering-subheading h3{margin-top:10px;font-size:28px;line-height:1.25;letter-spacing:-.7px}
+.engineering-tools dl{margin:22px 0 0}
+.engineering-tools dl>div{display:grid;grid-template-columns:180px minmax(0,1fr);gap:30px;padding:22px 0;border-top:1px solid var(--line)}
+.engineering-tools dl>div:last-child{border-bottom:1px solid var(--line)}
+.engineering-tools dt{font-size:16px;line-height:1.7;font-weight:500;color:var(--ink)}
+.engineering-tools dd{margin:0;color:var(--muted);font-size:14px;line-height:1.85}
+.engineering-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:32px}
+.engineering-results>article{padding:23px;border:1px solid var(--line);border-radius:7px;background:var(--surface)}
+.engineering-results .content-kicker{font-size:9px;letter-spacing:.9px}
+.engineering-results h3{margin-top:14px;font-size:21px;line-height:1.3;letter-spacing:-.4px}
+.engineering-results p{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.85}
+.engineering-decisions{margin-top:44px}
+.engineering-decisions>.engineering-subheading{margin-bottom:22px}
+.engineering-decisions details{border-top:1px solid var(--line)}
+.engineering-decisions details:last-child{border-bottom:1px solid var(--line)}
+.engineering-decisions summary{position:relative;padding:20px 30px 20px 0;cursor:pointer;list-style:none;font-size:16px;line-height:1.6;font-weight:500}
+.engineering-decisions summary::-webkit-details-marker{display:none}
+.engineering-decisions summary::after{content:"+";position:absolute;right:2px;top:17px;font-family:var(--mono);font-size:22px;color:var(--accent)}
+.engineering-decisions details[open]>summary::after{content:"−"}
+.engineering-decisions details>p{max-width:950px;padding-bottom:23px;color:var(--muted);font-size:14px;line-height:1.9}
+.engineering-source-links{display:flex;flex-wrap:wrap;gap:14px 30px;margin-top:26px}
+.engineering-source-links>a{font-size:12px;line-height:1.8;color:var(--accent)}
+.engineering-source-links>a:hover,.engineering-flow-title>a:hover{text-decoration:underline;text-underline-offset:4px}
+.stack-row{grid-template-columns:28px minmax(0,1.25fr) minmax(0,1fr) 30px;align-items:start;gap:24px}
+.stack-row>.skill-copy{display:block}
+.skill-copy h3{font-size:18px;line-height:1.4}
+.skill-copy>.skill-purpose{max-width:450px;margin-top:10px;color:var(--muted);font-size:13px;line-height:1.85}
+.stack-row>.skill-tools{display:flex;flex-wrap:wrap;gap:9px}
+.stack-row>.skill-tools>span{padding:5px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);font-size:12px;line-height:1.6;color:var(--muted)}
+@media(max-width:1050px){.engineering-heading{gap:34px}.engineering-overview{gap:22px}.engineering-story{padding:24px}.achievement-card{padding:24px}.achievement-card h3{font-size:22px}.engineering-intro{padding-top:33px}.stack-row{gap:18px}}
+@media(max-width:900px){.engineering-overview{grid-template-columns:1fr}.engineering-heading{grid-template-columns:1fr 1.05fr;gap:30px}.engineering-section h2{font-size:43px}.engineering-intro{padding-top:30px}.engineering-intro>p{font-size:14px}.engineering-results{gap:14px}.engineering-results>article{padding:18px}.engineering-results h3{font-size:19px}.achievement-card h3{font-size:21px}.achievement-card>p{font-size:13px}.skill-copy h3{font-size:16px}.skill-copy>.skill-purpose{font-size:13px}}
+@media(max-width:700px){.hero-role{font-size:12px;margin-top:17px}.hero-quicklink{font-size:12px;margin-top:19px;max-width:100%}.hero-proof{margin-top:30px}.achievement-grid{grid-template-columns:1fr;gap:17px;margin-bottom:32px}.achievement-card{padding:23px}.achievement-card h3{font-size:24px}.achievement-card>p{font-size:14px}.project-context>p,.project-impact>p,.project-highlights>li,.role-points>li{font-size:14px}.project-content>.project-role{font-size:12px}.experience-focus{padding:21px;margin-top:25px}.timeline-item>p.role-context{font-size:14px}.timeline-item>p.role-contribution{font-size:13px}.engineering-section{padding-top:70px;padding-bottom:70px}.engineering-heading{grid-template-columns:1fr;gap:22px;margin-bottom:28px}.engineering-section h2{font-size:40px;letter-spacing:-1.6px}.engineering-intro{padding-top:0}.engineering-intro>p{font-size:14px}.engineering-story{padding:22px}.engineering-story h3{font-size:25px}.engineering-flow-title{padding:17px 18px}.shipping-stages{padding:0 18px}.shipping-stages>li{gap:12px;padding:21px 0}.shipping-stages>li>span{flex-basis:22px;font-size:11px}.shipping-stages strong{font-size:16px}.shipping-stages p{font-size:13px}.engineering-feed-note{padding:18px;font-size:13px}.engineering-subheading h3{font-size:26px}.engineering-tools{margin-top:34px}.engineering-tools dl>div{grid-template-columns:1fr;gap:8px;padding:19px 0}.engineering-tools dt{font-size:16px}.engineering-tools dd{font-size:14px}.engineering-results{grid-template-columns:1fr;gap:14px}.engineering-results>article{padding:22px}.engineering-results h3{font-size:23px}.engineering-results p{font-size:14px}.engineering-decisions{margin-top:35px}.engineering-decisions summary{font-size:15px;padding-top:19px;padding-bottom:19px}.engineering-decisions details>p{font-size:14px}.engineering-source-links{gap:13px 22px}.stack-row{grid-template-columns:22px minmax(0,1fr) 24px;gap:12px}.stack-row>.skill-copy{grid-column:2;grid-row:1;display:block}.stack-row>.skill-tools{grid-column:2;grid-row:2}.stack-row>.stack-row-symbol{grid-column:3;grid-row:1 / span 2}.stack-row>.stack-index{grid-column:1;grid-row:1}.skill-copy h3{font-size:17px}.skill-copy>.skill-purpose{font-size:13px}.stack-row>.skill-tools>span{font-size:11px;padding:4px 7px}}
+@media(max-width:370px){.engineering-story{padding:18px}.engineering-section h2{font-size:36px}.engineering-story h3{font-size:23px}.achievement-card{padding:20px}.achievement-card h3{font-size:22px}.engineering-flow-title .mono{font-size:9px}.engineering-source-links{gap:12px}.hero-role{font-size:11px}}
+@media print{.hero-quicklink,.engineering-source-links,.engineering-flow-title>a{display:none}.achievement-card,.engineering-story,.engineering-flow,.engineering-results>article,.experience-focus{background:none;border-color:#aaa;break-inside:avoid}.engineering-section{padding:25px 0}.engineering-heading,.engineering-overview,.engineering-results{display:block}.engineering-intro{padding-top:18px}.engineering-section p,.engineering-section dd,.achievement-card>p,.project-context>p,.project-impact>p,.role-points>li,.project-highlights>li,.skill-copy>.skill-purpose{color:#444}.content-kicker,.hero-role,.hero-role>span{color:#333}.engineering-tools dl>div{grid-template-columns:150px 1fr}.engineering-results>article{margin-top:15px}.engineering-decisions details>p{display:block}.engineering-section h2{font-size:30px}}
