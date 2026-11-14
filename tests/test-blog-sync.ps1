@@ -16,6 +16,19 @@ function Assert-Test {
     $script:checks++
 }
 
+function Assert-PublishedInstant {
+    param([object]$Value)
+    # Windows PowerShell preserves JSON timestamps as strings; newer PowerShell
+    # can return DateTime values. Compare the instant rather than string methods.
+    $expected = [DateTimeOffset]::Parse('2026-11-14T05:33:53Z', [Globalization.CultureInfo]::InvariantCulture)
+    $actual = if ($Value -is [string]) {
+        [DateTimeOffset]::Parse($Value, [Globalization.CultureInfo]::InvariantCulture)
+    } else {
+        [DateTimeOffset]$Value
+    }
+    Assert-Test ($actual.UtcDateTime.Ticks -eq $expected.UtcDateTime.Ticks) 'Metadata must record the newest UTC publication across JSON date representations.'
+}
+
 function Assert-PreservedOnFailure {
     param([string]$Name, [string]$Feed, [string]$Html)
     $htmlPath = Join-Path $testRoot ($Name + '.html')
@@ -70,7 +83,14 @@ try {
     Assert-Test ($rendered.Contains('description description...')) 'Long excerpts must truncate on a word boundary.'
     $metadata = [IO.File]::ReadAllText($metadataPath) | ConvertFrom-Json
     Assert-Test ($metadata.postCount -eq 3) 'Metadata must record rendered post count.'
-    Assert-Test ($metadata.latestPublishedUtc.StartsWith('2026-11-14T05:33:53')) 'Metadata must record newest UTC publication.'
+    Assert-PublishedInstant $metadata.latestPublishedUtc
+    # Exercise both runtime representations even when running locally on 5.1,
+    # plus an equivalent offset timestamp to verify UTC normalization.
+    Assert-PublishedInstant '2026-11-14T05:33:53.0000000+00:00'
+    $utcTimestamp = [DateTime]::SpecifyKind((New-Object DateTime(2026, 11, 14, 5, 33, 53)), [DateTimeKind]::Utc)
+    Assert-PublishedInstant $utcTimestamp
+    Assert-PublishedInstant ($utcTimestamp.ToLocalTime())
+    Assert-PublishedInstant ([DateTimeOffset]::Parse('2026-11-14T11:03:53+05:30', [Globalization.CultureInfo]::InvariantCulture))
 
     $singleFeed = '<rss><channel><item><title><![CDATA[One CDATA post]]></title><link>https://prakharshukla.org/post/only-one</link><pubDate>Sat, 14 Nov 2026 05:33:53 GMT</pubDate><description><![CDATA[One post is enough.]]></description></item></channel></rss>'
     $singlePath = Join-Path $testRoot 'single.xml'
