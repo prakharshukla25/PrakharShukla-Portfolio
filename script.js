@@ -145,5 +145,5 @@ if ("IntersectionObserver" in window) {
       else if (link.hasAttribute("aria-current")) link.removeAttribute("aria-current");
     });
   }, { rootMargin: "-15% 0px -35% 0px", threshold: 0 });
-  ["work", "experience", "stack"].forEach((id) => observer.observe(document.getElementById(id)));
+  ["work", "experience", "stack", "blog"].forEach((id) => observer.observe(document.getElementById(id)));
 }
