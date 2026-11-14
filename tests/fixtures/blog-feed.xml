@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel>
+  <title>Offline blog sync fixture</title>
+  <item><title>Oldest post</title><link>https://www.prakharshukla.org/post/oldest</link><pubDate>Wed, 01 Jan 2025 10:00:00 GMT</pubDate><description>Old article.</description><category>Archive</category></item>
+  <item><title>Duplicate stale copy</title><link>https://prakharshukla.org/post/newest?tracking=old#section</link><pubDate>Thu, 01 Jan 2026 10:00:00 GMT</pubDate><description>This older duplicate must lose.</description></item>
+  <item><title><![CDATA[Newest <script> & "quoted" title]]></title><link>https://www.prakharshukla.org/post/newest</link><pubDate>Sat, 14 Nov 2026 05:33:53 GMT</pubDate><description><![CDATA[<p>A useful <strong>shell</strong> guide &amp; practical examples. <script>neverImportThis()</script><!-- noImportedComment --></p>]]></description><category><![CDATA[Technical & <cloud>]]></category><content:encoded><![CDATA[<p>CONTENT_WORDS</p>]]></content:encoded></item>
+  <item><title>India date boundary</title><link>https://www.prakharshukla.org/post/india-date</link><pubDate>Fri, 27 Jun 2025 18:30:00 GMT</pubDate><description><![CDATA[A short description with <em>formatting</em> removed.]]></description><category><![CDATA[Technical Blogs]]></category></item>
+  <item><title>Second newest</title><link>https://www.prakharshukla.org/post/second</link><pubDate>Sun, 03 Aug 2025 08:58:12 GMT</pubDate><description>DESCRIPTION_WORDS</description><category><![CDATA[My thought]]></category></item>
+  <item><title>Unsafe scheme</title><link>javascript:alert(1)</link><pubDate>Sat, 14 Nov 2026 20:00:00 GMT</pubDate></item>
+  <item><title>Foreign domain</title><link>https://evil.example/post/fake</link><pubDate>Sat, 14 Nov 2026 21:00:00 GMT</pubDate></item>
+  <item><title>Foreign userinfo trick</title><link>https://www.prakharshukla.org@evil.example/post/fake</link><pubDate>Sat, 14 Nov 2026 21:00:00 GMT</pubDate></item>
+  <item><title>Wrong path</title><link>https://www.prakharshukla.org/not-a-post</link><pubDate>Sat, 14 Nov 2026 22:00:00 GMT</pubDate></item>
+  <item><title>HTTP link</title><link>http://www.prakharshukla.org/post/http</link><pubDate>Sat, 14 Nov 2026 22:00:00 GMT</pubDate></item>
+  <item><title>Broken date</title><link>https://www.prakharshukla.org/post/bad-date</link><pubDate>not-a-date</pubDate></item>
+</channel></rss>

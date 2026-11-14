@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # UTC; refresh the deployed blog previews approximately every six hours.
+    - cron: '17 */6 * * *'
 
 permissions:
   contents: read
@@ -29,11 +32,15 @@ jobs:
         run: ./scripts/validate.ps1
       - name: Check JavaScript syntax
         run: node --check script.js
+      - name: Test blog feed rendering
+        shell: pwsh
+        run: ./tests/test-blog-sync.ps1
       - name: Build isolated static artifact
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
-        run: ./scripts/build.ps1
+          REFRESH_BLOG: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+        run: ./scripts/build.ps1 -RefreshBlog:($env:REFRESH_BLOG -eq 'true')
       - name: Build and smoke test unprivileged container
         shell: bash
         run: |

@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [switch]$RefreshBlog,
+    [string]$BlogFeedPath
+)
 
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -25,6 +28,16 @@ foreach ($relative in @('404.html', 'robots.txt', 'CNAME')) {
     $source = Join-Path $projectRoot $relative
     if (Test-Path -LiteralPath $source -PathType Leaf) { Copy-Item -LiteralPath $source -Destination $outputPath }
 }
+if ($RefreshBlog) {
+    $blogParameters = @{
+        HtmlPath = Join-Path $outputPath 'index.html'
+        MetadataPath = Join-Path $outputPath 'blog-sync.json'
+    }
+    if ($BlogFeedPath) { $blogParameters.FeedPath = $BlogFeedPath }
+    & (Join-Path $PSScriptRoot 'sync-blog.ps1') @blogParameters
+}
+# Check the generated page as well as the source, including feed-rendered links.
+& (Join-Path $PSScriptRoot 'validate.ps1') -SiteDirectory $outputPath
 [IO.File]::WriteAllText((Join-Path $outputPath '.nojekyll'), '')
 $commit = if ($env:SOURCE_COMMIT) { $env:SOURCE_COMMIT } else { 'local-preview' }
 $metadata = [ordered]@{ sourceCommit = $commit; builtAtUtc = [DateTime]::UtcNow.ToString('o'); generator = 'static-portfolio' }

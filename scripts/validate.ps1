@@ -1,8 +1,12 @@
 [CmdletBinding()]
-param()
+param([string]$SiteDirectory)
 
 $ErrorActionPreference = 'Stop'
-$projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$projectRoot = if ([string]::IsNullOrWhiteSpace($SiteDirectory)) {
+    [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+} else {
+    [IO.Path]::GetFullPath($SiteDirectory)
+}
 $failures = New-Object 'System.Collections.Generic.List[string]'
 
 function Assert-Check {
