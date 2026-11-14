@@ -12,6 +12,7 @@
 .blog-index{color:#829374;font-size:10px;letter-spacing:.6px;padding-top:3px}
 .blog-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;color:var(--muted);font-size:10px;line-height:1.6}
 .blog-topic{font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:var(--lime);margin-right:5px}
+.blog-featured{font-family:var(--mono);font-size:9px;letter-spacing:.5px;color:var(--lime);border:1px solid #50653e;border-radius:3px;padding:1px 6px}
 .blog-entry h3{max-width:830px;font-size:24px;line-height:1.3;letter-spacing:-.6px;margin-top:12px;transition:color .2s}
 .blog-entry-copy>p{max-width:700px;font-size:12px;line-height:1.85;color:var(--muted);margin-top:12px}
 .blog-arrow{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid #455637;border-radius:50%;color:var(--lime);font-size:25px;margin-top:20px;transition:background .2s,color .2s,transform .2s}

@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$HtmlPath,
     [string]$FeedPath,
     [string]$FeedUrl = 'https://www.prakharshukla.org/blog-feed.xml',
-    [string]$MetadataPath
+    [string]$MetadataPath,
+    [string]$PinnedPostPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -137,11 +138,53 @@ foreach ($item in $items) {
 }
 $sorted = @($posts | Sort-Object -Property @{ Expression = { $_.Published.UtcDateTime.Ticks }; Descending = $true }, @{ Expression = { $_.Url }; Descending = $false })
 $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
-$latest = @($sorted | Where-Object { $seen.Add($_.Url) } | Select-Object -First 3)
-if ($latest.Count -eq 0) { throw 'Blog feed contains no valid, dated HTTPS blog posts. Existing HTML was preserved.' }
+$uniquePosts = @($sorted | Where-Object { $seen.Add($_.Url) })
+if ($uniquePosts.Count -eq 0) { throw 'Blog feed contains no valid, dated HTTPS blog posts. Existing HTML was preserved.' }
+$pinnedUrl = $null
+if ($PinnedPostPath) {
+    $pin = [IO.File]::ReadAllText([IO.Path]::GetFullPath($PinnedPostPath)) | ConvertFrom-Json
+    $pinnedUrl = Get-PostUrl ([string]$pin.url)
+    $pinTitle = ([regex]::Replace(([Net.WebUtility]::HtmlDecode([string]$pin.title)), '\s+', ' ')).Trim()
+    $pinPublished = [DateTimeOffset]::MinValue
+    if ($pin.publishedAt -is [DateTimeOffset]) {
+        $pinPublished = $pin.publishedAt
+    } elseif ($pin.publishedAt -is [DateTime]) {
+        # Modern ConvertFrom-Json can return dates instead of timestamp strings.
+        $typedDate = $pin.publishedAt
+        if ($typedDate.Kind -eq [DateTimeKind]::Unspecified) { $typedDate = [DateTime]::SpecifyKind($typedDate, [DateTimeKind]::Utc) }
+        $pinPublished = [DateTimeOffset]$typedDate
+    } else {
+        $pinDateStyle = [Globalization.DateTimeStyles]::AllowWhiteSpaces -bor [Globalization.DateTimeStyles]::AssumeUniversal
+        if (-not [DateTimeOffset]::TryParse([string]$pin.publishedAt, $invariant, $pinDateStyle, [ref]$pinPublished)) {
+            throw 'Featured blog configuration needs a valid publication timestamp.'
+        }
+    }
+    if (-not $pinnedUrl -or -not $pinTitle) { throw 'Featured blog configuration needs a title and an HTTPS post URL on your blog.' }
+    $pinnedMatches = @($uniquePosts | Where-Object { $_.Url -eq $pinnedUrl })
+    if ($pinnedMatches.Count) {
+        $pinnedPost = $pinnedMatches[0]
+    } else {
+        # RSS feeds contain a limited window. Preserve the chosen article when
+        # it eventually drops out, using the verified details saved in config.
+        $pinCategory = ConvertTo-PlainText ([string]$pin.category)
+        if (-not $pinCategory) { $pinCategory = 'Blog' }
+        $pinExcerpt = ConvertTo-PlainText ([string]$pin.excerpt)
+        if ([string]::Equals($pinExcerpt, $pinTitle, [StringComparison]::OrdinalIgnoreCase)) { $pinExcerpt = '' }
+        $pinnedPost = [pscustomobject]@{
+            Title = $pinTitle; Url = $pinnedUrl; Published = $pinPublished; Category = $pinCategory
+            Excerpt = Get-Excerpt $pinExcerpt; Minutes = $null
+        }
+    }
+    $pinnedPost | Add-Member -NotePropertyName IsFeatured -NotePropertyValue $true -Force
+    $recentPosts = @($uniquePosts | Where-Object { $_.Url -ne $pinnedUrl } | Select-Object -First 2)
+    $latest = @($recentPosts) + @($pinnedPost)
+} else {
+    $latest = @($uniquePosts | Select-Object -First 3)
+}
 
 $lines = New-Object 'System.Collections.Generic.List[string]'
-$lines.Add('      <div class="blog-list" aria-label="Latest blog articles">')
+$listLabel = if ($pinnedUrl) { 'Latest and featured blog articles' } else { 'Latest blog articles' }
+$lines.Add(('      <div class="blog-list" aria-label="{0}">' -f $listLabel))
 for ($index = 0; $index -lt $latest.Count; $index++) {
     $post = $latest[$index]
     $title = [Net.WebUtility]::HtmlEncode($post.Title)
@@ -150,6 +193,7 @@ for ($index = 0; $index -lt $latest.Count; $index++) {
     $excerpt = [Net.WebUtility]::HtmlEncode($post.Excerpt)
     $excerptMarkup = if ($excerpt) { '<p>{0}</p>' -f $excerpt } else { '' }
     $readingMarkup = if ($null -ne $post.Minutes) { '<span>~{0} min read</span>' -f $post.Minutes } else { '' }
+    $featuredMarkup = if ($post.PSObject.Properties['IsFeatured'] -and $post.IsFeatured) { '<span class="blog-featured">Featured</span>' } else { '' }
     $indiaDate = $post.Published.ToOffset([TimeSpan]::FromMinutes(330))
     $dateIso = $indiaDate.ToString("yyyy-MM-dd'T'HH:mm:sszzz", $invariant)
     $dateDisplay = $indiaDate.ToString('MMM d, yyyy', $invariant)
@@ -157,7 +201,7 @@ for ($index = 0; $index -lt $latest.Count; $index++) {
     $lines.Add('        <article>')
     $lines.Add(('          <a class="blog-entry" href="{0}" target="_blank" rel="noopener noreferrer">' -f $url))
     $lines.Add(('            <span class="blog-index mono" aria-hidden="true">{0}</span>' -f $number))
-    $lines.Add(('            <div class="blog-entry-copy"><div class="blog-meta"><span class="blog-topic">{0}</span><time datetime="{1}">{2}</time>{3}</div><h3>{4}</h3>{5}</div>' -f $category, $dateIso, $dateDisplay, $readingMarkup, $title, $excerptMarkup))
+    $lines.Add(('            <div class="blog-entry-copy"><div class="blog-meta"><span class="blog-topic">{0}</span>{6}<time datetime="{1}">{2}</time>{3}</div><h3>{4}</h3>{5}</div>' -f $category, $dateIso, $dateDisplay, $readingMarkup, $title, $excerptMarkup, $featuredMarkup))
     $lines.Add('            <span class="blog-arrow" aria-hidden="true">&#8599;</span>')
     $lines.Add('          </a>')
     $lines.Add('        </article>')
@@ -169,7 +213,8 @@ $metadata = [ordered]@{
     feedUrl = $FeedUrl
     fetchedAtUtc = [DateTimeOffset]::UtcNow.ToString('o', $invariant)
     postCount = $latest.Count
-    latestPublishedUtc = $latest[0].Published.ToUniversalTime().ToString('o', $invariant)
+    latestPublishedUtc = $uniquePosts[0].Published.ToUniversalTime().ToString('o', $invariant)
+    pinnedPostUrl = $pinnedUrl
 }
 
 # Finish all parsing/rendering before changing either destination. Stage beside each
@@ -195,4 +240,4 @@ try {
         if ($temporaryFile -and [IO.File]::Exists($temporaryFile)) { [IO.File]::Delete($temporaryFile) }
     }
 }
-Write-Output ('Blog sync: rendered {0} latest articles; newest published {1}.' -f $latest.Count, $metadata.latestPublishedUtc)
+Write-Output ('Blog sync: rendered {0} articles; newest published {1}.' -f $latest.Count, $metadata.latestPublishedUtc)

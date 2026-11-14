@@ -4,7 +4,9 @@ A custom, responsive portfolio built with HTML, CSS, and JavaScript. The deploym
 
 ## Blog updates
 
-GitHub Actions reads `https://www.prakharshukla.org/blog-feed.xml` and renders the three newest articles into the deployed portfolio. Publish a post on the blog as usual; the portfolio refreshes approximately every six hours. You can update sooner through **Actions → Validate and deploy portfolio → Run workflow → main**. Pushes to `main` also refresh the previews.
+GitHub Actions reads `https://www.prakharshukla.org/blog-feed.xml` and renders the two newest articles, followed by your featured article, into the deployed portfolio. Publish a post on the blog as usual; the portfolio refreshes approximately every six hours. You can update sooner through **Actions → Validate and deploy portfolio → Run workflow → main**. Pushes to `main` also refresh the previews.
+
+The third slot is pinned to **“Your Eyes Are Off Slant”**. Change `config/blog-featured.json` to feature a different article. The saved title, publication timestamp, category, and excerpt keep the featured article available even after it falls outside the RSS feed's recent-post window. A featured article also present in the feed is shown once, in the featured slot.
 
 The schedule runs at 00:17, 06:17, 12:17, and 18:17 UTC (05:47, 11:47, 17:47, and 23:47 IST). GitHub may delay scheduled runs. Schedules run from the default branch and can be disabled after 60 days without repository activity in a public repository; re-enable the workflow in Actions if that happens.
 

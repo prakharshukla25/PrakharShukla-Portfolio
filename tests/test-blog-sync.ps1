@@ -30,7 +30,7 @@ function Assert-PublishedInstant {
 }
 
 function Assert-PreservedOnFailure {
-    param([string]$Name, [string]$Feed, [string]$Html)
+    param([string]$Name, [string]$Feed, [string]$Html, [string]$PinnedPostPath)
     $htmlPath = Join-Path $testRoot ($Name + '.html')
     $feedPath = Join-Path $testRoot ($Name + '.xml')
     $metadataPath = Join-Path $testRoot ($Name + '.json')
@@ -39,7 +39,9 @@ function Assert-PreservedOnFailure {
     [IO.File]::WriteAllText($metadataPath, 'preserve existing metadata', $utf8)
     $before = (Get-FileHash -LiteralPath $htmlPath -Algorithm SHA256).Hash
     $failed = $false
-    try { & $syncScript -HtmlPath $htmlPath -FeedPath $feedPath -MetadataPath $metadataPath | Out-Null }
+    $parameters = @{ HtmlPath = $htmlPath; FeedPath = $feedPath; MetadataPath = $metadataPath }
+    if ($PinnedPostPath) { $parameters.PinnedPostPath = $PinnedPostPath }
+    try { & $syncScript @parameters | Out-Null }
     catch { $failed = $true }
     Assert-Test $failed "$Name must fail."
     Assert-Test ((Get-FileHash -LiteralPath $htmlPath -Algorithm SHA256).Hash -eq $before) "$Name must preserve HTML byte-for-byte."
@@ -112,6 +114,63 @@ try {
     [IO.File]::WriteAllText($singlePath, $shortFullBody, $utf8)
     & $syncScript -HtmlPath $htmlPath -FeedPath $singlePath | Out-Null
     Assert-Test ([IO.File]::ReadAllText($htmlPath).Contains('~1 min read')) 'Full article reading time must be at least one minute.'
+
+    $pinPath = Join-Path $testRoot 'featured.json'
+    function Invoke-PinnedCase {
+        param([string]$FeedContent, [hashtable]$PinSettings)
+        [IO.File]::WriteAllText($htmlPath, $template, $utf8)
+        [IO.File]::WriteAllText($feedPath, $FeedContent, $utf8)
+        [IO.File]::WriteAllText($pinPath, ($PinSettings | ConvertTo-Json), $utf8)
+        & $syncScript -HtmlPath $htmlPath -FeedPath $feedPath -MetadataPath $metadataPath -PinnedPostPath $pinPath | Out-Null
+        return [IO.File]::ReadAllText($htmlPath)
+    }
+    $pinSettings = @{
+        url = 'https://prakharshukla.org/post/oldest?tracking=pin#google_vignette'
+        title = 'Saved & <featured>'
+        publishedAt = '2021-03-03T12:09:44Z'
+        category = 'My thought'
+        excerpt = 'Saved personal reflection & clear examples.'
+    }
+    $pinnedHtml = Invoke-PinnedCase $fixture $pinSettings
+    $pinnedLinks = [regex]::Matches($pinnedHtml, 'class="blog-entry" href="([^"]+)"')
+    Assert-Test ($pinnedLinks.Count -eq 3 -and $pinnedLinks[0].Groups[1].Value.EndsWith('/post/newest') -and $pinnedLinks[1].Groups[1].Value.EndsWith('/post/second') -and $pinnedLinks[2].Groups[1].Value.EndsWith('/post/oldest')) 'Show two newest posts followed by the older pinned article.'
+    Assert-Test ([regex]::Matches($pinnedHtml, '/post/oldest').Count -eq 1) 'Show the pinned article only once.'
+    Assert-Test ($pinnedHtml -notmatch 'google_vignette|tracking=pin') 'Remove tracking fragments and query strings from the pinned URL.'
+    Assert-Test ($pinnedHtml.Contains('<h3>Oldest post</h3>') -and $pinnedHtml -notmatch 'Saved &amp;') 'Prefer current RSS details when the pinned article is in the feed.'
+    Assert-Test ([regex]::Matches($pinnedHtml, 'class="blog-featured"').Count -eq 1) 'Mark exactly one article as featured.'
+
+    $pinSettings.url = 'https://www.prakharshukla.org/post/not-in-feed'
+    $pinnedHtml = Invoke-PinnedCase $fixture $pinSettings
+    $pinnedLinks = [regex]::Matches($pinnedHtml, 'class="blog-entry" href="([^"]+)"')
+    Assert-Test ($pinnedLinks.Count -eq 3 -and $pinnedLinks[2].Groups[1].Value.EndsWith('/post/not-in-feed')) 'Keep the pinned third slot when its article leaves the RSS window.'
+    Assert-Test ($pinnedHtml.Contains('<h3>Saved &amp; &lt;featured&gt;</h3>')) 'Escape the saved fallback title.'
+    Assert-Test ($pinnedHtml.Contains('Saved personal reflection &amp; clear examples.')) 'Use the saved fallback excerpt safely.'
+    Assert-Test ($pinnedHtml.Contains('2021-03-03T17:39:44+05:30')) 'Convert the saved fallback publication time to India time.'
+    $pinMetadata = [IO.File]::ReadAllText($metadataPath) | ConvertFrom-Json
+    Assert-Test ($pinMetadata.pinnedPostUrl -eq $pinSettings.url) 'Record the featured article in deployment metadata.'
+
+    $pinSettings.url = 'https://www.prakharshukla.org/post/newest'
+    $pinnedHtml = Invoke-PinnedCase $fixture $pinSettings
+    $pinnedLinks = [regex]::Matches($pinnedHtml, 'class="blog-entry" href="([^"]+)"')
+    Assert-Test ($pinnedLinks.Count -eq 3 -and $pinnedLinks[0].Groups[1].Value.EndsWith('/post/second') -and $pinnedLinks[1].Groups[1].Value.EndsWith('/post/india-date') -and $pinnedLinks[2].Groups[1].Value.EndsWith('/post/newest')) 'Exclude a recent pinned article from the automatic slots and append it once.'
+    Assert-Test ([regex]::Matches($pinnedHtml, '/post/newest').Count -eq 1) 'A newest-post pin must not create a duplicate.'
+    $pinMetadata = [IO.File]::ReadAllText($metadataPath) | ConvertFrom-Json
+    Assert-PublishedInstant $pinMetadata.latestPublishedUtc
+
+    $pinSettings.url = 'https://www.prakharshukla.org/post/not-in-feed'
+    $pinnedHtml = Invoke-PinnedCase $singleFeed $pinSettings
+    Assert-Test ([regex]::Matches($pinnedHtml, '<article>').Count -eq 2) 'A small feed can show one recent article and the featured article.'
+    $pinSettings.url = 'https://www.prakharshukla.org/post/only-one'
+    $pinnedHtml = Invoke-PinnedCase $singleFeed $pinSettings
+    Assert-Test ([regex]::Matches($pinnedHtml, '<article>').Count -eq 1) 'A feed containing only the featured post must show it once.'
+
+    $pinSettings.url = 'https://evil.example/post/fake'
+    [IO.File]::WriteAllText($pinPath, ($pinSettings | ConvertTo-Json), $utf8)
+    Assert-PreservedOnFailure 'invalid-pin-url' $fixture $template $pinPath
+    $pinSettings.url = 'https://www.prakharshukla.org/post/not-in-feed'
+    $pinSettings.publishedAt = 'not-a-date'
+    [IO.File]::WriteAllText($pinPath, ($pinSettings | ConvertTo-Json), $utf8)
+    Assert-PreservedOnFailure 'invalid-pin-date' $fixture $template $pinPath
 
     Assert-PreservedOnFailure 'malformed' '<rss><channel><item></rss>' $template
     Assert-PreservedOnFailure 'empty' '<rss><channel /></rss>' $template

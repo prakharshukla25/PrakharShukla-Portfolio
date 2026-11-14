@@ -32,6 +32,7 @@ if ($RefreshBlog) {
     $blogParameters = @{
         HtmlPath = Join-Path $outputPath 'index.html'
         MetadataPath = Join-Path $outputPath 'blog-sync.json'
+        PinnedPostPath = Join-Path $projectRoot 'config/blog-featured.json'
     }
     if ($BlogFeedPath) { $blogParameters.FeedPath = $BlogFeedPath }
     & (Join-Path $PSScriptRoot 'sync-blog.ps1') @blogParameters
